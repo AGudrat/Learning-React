@@ -1,21 +1,62 @@
-import React, { Component } from 'react'
-import {connect} from 'react-redux';
-
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import { ListGroup, ListGroupItem } from "reactstrap";
+import { bindActionCreators } from "redux";
+import * as categoryActions from "../../redux/actions/categoryActions";
+import { Badge } from "reactstrap";
+import * as productActions from "../../redux/actions/productActions";
 class CategoryList extends Component {
+  componentDidMount() {
+    this.props.actions.getCategories();
+  }
+
+  selectCategory = (category) => {
+    this.props.actions.changeCategory(category);
+    this.props.actions.getProducts(category.id);
+  };
   render() {
     return (
       <div>
-        <h3>Categories</h3>
-        <h5>Seçili Kategori : {this.props.currentCategory.categoryName}</h5>
+        <Badge color="warning">
+          <h5>Categories</h5>
+        </Badge>
+        <ListGroup>
+          {Array.from(this.props.categories).map((category) => (
+            <ListGroupItem
+              active={category.id === this.props.currentCategory.id}
+              onClick={() => this.selectCategory(category)}
+              key={category.id}
+            >
+              {category.categoryName}
+            </ListGroupItem>
+          ))}
+        </ListGroup>
       </div>
-    )
+    );
   }
 }
 
-function mapStateToProps(state) { 
+function mapStateToProps(state) {
   return {
-    currentCategory:state.changeCategoryReducer 
-  }
- }
+    currentCategory: state.changeCategoryReducer,
+    categories: state.categoryListReducer,
+  };
+}
 
-export default connect(mapStateToProps)(CategoryList)
+function mapDispatchToProps(dispatch) {
+  return {
+    actions: {
+      getCategories: bindActionCreators(
+        categoryActions.getCategories,
+        dispatch
+      ),
+      changeCategory: bindActionCreators(
+        categoryActions.changeCategory,
+        dispatch
+      ),
+      getProducts: bindActionCreators(productActions.getProducts, dispatch),
+    },
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(CategoryList);
